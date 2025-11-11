@@ -14,7 +14,7 @@ for c in items_data.columns[1:]:
 
 COUNT_OF_ITEMS = len(items_data)
 BACKPACK_LOAD_CAPACITY = 6404180
-COUNT_OF_ITERATIONS = 500
+COUNT_OF_ITERATIONS = 1000
 
 
 class Knapsack:
@@ -77,6 +77,8 @@ class Knapsack:
 
     def create_new_population(self):
         new_population = []
+        elite = self.get_best_solution()
+        new_population.append(elite)
 
         while len(new_population) < self.population_size:
             parent_1 = self.selection_rank()
@@ -91,10 +93,12 @@ class Knapsack:
             child_2 = self.mutate_bit_flip(child_2)
 
             child_1 = self.calculate_fitness(child_1)
-            child_2 = self.calculate_fitness(child_2)
-
             new_population.append(child_1)
-            new_population.append(child_2)
+
+            if len(new_population) < self.population_size:
+                child_2 = self.calculate_fitness(child_2)
+                new_population.append(child_2)
+
 
         self.population = new_population
 
@@ -108,7 +112,7 @@ class Knapsack:
 
 
 def main():
-    knapsack = Knapsack(200, 0.9, 0.015)
+    knapsack = Knapsack(200, 0.9, 0.1)
     knapsack.generate_initial_population()
     y_vals = []
     for i in range(COUNT_OF_ITERATIONS):
