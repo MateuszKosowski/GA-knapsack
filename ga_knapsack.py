@@ -12,7 +12,7 @@ for c in items_data.columns[1:]:
 
 COUNT_OF_ITEMS = len(items_data)
 BACKPACK_LOAD_CAPACITY = 6404180
-COUNT_OF_ITERATIONS = 100
+COUNT_OF_ITERATIONS = 200
 class Knapsack:
     def __init__(self, population_size, cross_probability, mutation_probability):
         self.population_size = population_size
@@ -43,7 +43,6 @@ class Knapsack:
 
 
     def roulette(self):
-        # print(self.population)
 
         chromosomes = [item[0] for item in self.population]
         fitness_scores = [item[1] for item in self.population]
@@ -53,10 +52,6 @@ class Knapsack:
             weights=fitness_scores,
             k=1
         )
-
-        print("selected: ")
-        print(selected)
-        print("\n")
 
         return selected[0]
 
@@ -86,15 +81,11 @@ class Knapsack:
             parent_1 = self.roulette()
             parent_2 = self.roulette()
 
-            # print("parent: \n")
-            # print(parent_1)
-
-
             if random.random() < self.cross_probability:
                 child_1, child_2 = self.signle_cross(parent_1, parent_2)
             else:
                 child_1, child_2 = parent_1.copy(), parent_2.copy()
-            # print(child_1)
+
             child_1 = self.mutate_bit_flip(child_1)
             child_2 = self.mutate_bit_flip(child_2)
 
@@ -105,16 +96,23 @@ class Knapsack:
             new_population.append(child_2)
 
         self.population = new_population
+    
+    def get_best_solution(self):
+        best_solution = ([], 0)
+        for solution in self.population:
+            if best_solution[1] < solution[1]:
+                best_solution = solution
 
+        return best_solution
 
 def main():
-    knapsack = Knapsack(10, 0.9, 0.5)
+    knapsack = Knapsack(100, 0.95, 0.01)
     knapsack.generate_initial_population()
-    # print(knapsack.population)
 
     for _ in range(COUNT_OF_ITERATIONS):
         knapsack.create_new_population()
-        #print(knapsack.population)
+
+    print(knapsack.get_best_solution())
 
 
 if __name__ == '__main__':
