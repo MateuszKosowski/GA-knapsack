@@ -7,14 +7,14 @@ items_data = pd.read_csv('data/problem_plecakowy_dane_CSV_tabulatory.csv', sep='
 
 items_data.columns = ['index', 'name', 'weight', 'value']
 items_data = items_data.iloc[:, 1:]
-print(items_data.head())
+# print(items_data.head())
 
 for c in items_data.columns[1:]:
     items_data[c] = pd.to_numeric(items_data[c].str.replace(' ', ''), errors='coerce')
 
 COUNT_OF_ITEMS = len(items_data)
 BACKPACK_LOAD_CAPACITY = 6404180
-COUNT_OF_ITERATIONS = 1000
+COUNT_OF_ITERATIONS = 100
 
 
 class Knapsack:
