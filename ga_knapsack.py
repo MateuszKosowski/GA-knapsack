@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import random
-import matplotlib.pyplot as plt
 
 items_data = pd.read_csv('data/problem_plecakowy_dane_CSV_tabulatory.csv', sep='\t')
 
@@ -109,6 +108,7 @@ class Knapsack:
                 best_solution = solution
 
         return best_solution
+    
 
 
 def main():

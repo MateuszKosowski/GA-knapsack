@@ -3,17 +3,21 @@ from itertools import product
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, parallel_backend
 import seaborn as sns
+import time
 
 def run_experiment(pop, cross, mut, iterations):
+    start = time.perf_counter()
     knapsack = Knapsack(pop,cross,mut)
     knapsack.generate_initial_population()
     y_vals = []
     for i in range(iterations):
         knapsack.create_new_population()
         y_vals.append(knapsack.get_best_solution()[1])
-    return y_vals
+    end = time.perf_counter()
+    runtime = (end - start) * 1000
+    return y_vals, runtime
     
 if __name__ == "__main__":
     CROSS_PROBABILITIES = [0.6, 0.8, 1.0]
@@ -21,19 +25,21 @@ if __name__ == "__main__":
     POPULATION_SIZES = [50, 100, 200]
     ITERATIONS = 200
     experiments = list(product(POPULATION_SIZES, CROSS_PROBABILITIES, MUTATION_PROBABILITIES))
-    results = pd.DataFrame(columns=["Populacja", "Prawdopodobieństwo krzyżowania", "Prawdopodobieństwo mutacji", "Średnia", "Mediana", "Minimum", "Maksimum", "Odchylenie standardowe"])
+    results = pd.DataFrame(columns=["Populacja", "Prawdopodobieństwo krzyżowania", "Prawdopodobieństwo mutacji", "Średnia", "Mediana", "Minimum", "Maksimum", "Odchylenie standardowe", "Czas wykonywania"])
 
     print("\t".join(results.columns))
 
     for ex_idx, (pop, cross, mut) in enumerate(experiments):
         plt.clf()
 
-        best_histories = Parallel(n_jobs=-1)(
-            delayed(run_experiment)(pop, cross, mut, ITERATIONS) for _ in range(5)
+        ex_results = Parallel(n_jobs=-1)(
+            delayed(run_experiment)(pop, cross, mut, ITERATIONS) for _ in range(50)
         )    
+
+        best_histories, times = zip(*ex_results)
         
         best_array = np.array([hist[-1] for hist in best_histories])
-
+        avg_time = sum(times) / len(times)
         results.loc[len(results)] = {
             "Populacja": pop, 
             "Prawdopodobieństwo krzyżowania": cross, 
@@ -42,12 +48,13 @@ if __name__ == "__main__":
             "Mediana": np.median(best_array), 
             "Minimum": best_array.min(), 
             "Maksimum": best_array.max(), 
-            "Odchylenie standardowe": best_array.std()
+            "Odchylenie standardowe": round(best_array.std(), 2),
+            "Czas wykonywania": round(avg_time, 2)
         }
         last_row = results.iloc[-1]
         print("\t".join(str(val) for val in last_row))
 
-        for i, y_vals in enumerate(best_histories, 1):
+        for i, y_vals in enumerate(best_histories[:5], 1):
             plt.plot(range(ITERATIONS), y_vals, label=f"Próba {i}")
 
         plt.title(f"Populacja: {pop}, Krzyżowanie: {cross}, Mutacja: {mut}")
